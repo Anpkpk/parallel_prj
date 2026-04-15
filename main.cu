@@ -7,8 +7,8 @@
 #include "tiled_mat_mul_gpu.h"
 #include "../utils.h"
 
-#define MAX_NUM 10 
-#define MIN_NUM -10 
+#define MAX_NUM 1000
+#define MIN_NUM -1000 
 
 int main(int argc, char const *argv[])
 {
@@ -34,12 +34,28 @@ int main(int argc, char const *argv[])
             B[i*N3+j] = (float)(rand() % (MAX_NUM - MIN_NUM + 1) + MIN_NUM);
     }
 
+    printf("Matrix A (10x10): \n");
+    for (int i = 0; i < 10; i++)
+    {
+        for (int j = 0; j < 10; j++)
+            printf("%.2f ", A[i*N2+j]);
+        printf("\n");
+    }
+
+    printf("\nMatrix B (10x10): \n");
+    for (int i = 0; i < 10; i++)
+    {
+        for (int j = 0; j < 10; j++)
+            printf("%.2f ", B[i*N3+j]);
+        printf("\n");
+    }
+
     // Matrix multiplication on a GPU
     float* C_gpu = (float*)malloc(N1*N3*sizeof(float));
     unsigned long long t1_gpu = myCPUTimer();
     mat_mul_gpu(A, B, C_gpu, N1, N2, N3);
     unsigned long long t2_gpu = myCPUTimer();
-    printf("GPU execution time (N1: %d; N2: %d; N3: %d): %llu microseconds \n", N1, N2, N3, t2_gpu-t1_gpu);
+    printf("\nGPU execution time (N1: %d; N2: %d; N3: %d): %llu microseconds \n", N1, N2, N3, t2_gpu-t1_gpu);
     printf("\n");
 
     // Tiled Matrix multiplication on a GPU
@@ -61,8 +77,22 @@ int main(int argc, char const *argv[])
         for (int j = 0; j < N3; j++)
             assert(fabs(C_gpu[i*N3+j] - C_tiled_gpu[i*N3+j]) < 0.00000001);
     }
-    printf("Asserting Passed! \n");
 
+    printf("Matrix C from GPU (10x10): \n");
+    for (int i = 0; i < 10; i++)    {
+        for (int j = 0; j < 10; j++)            
+            printf("%.2f ", C_gpu[i*N3+j]);
+        printf("\n");
+    }   
+
+    printf("\nMatrix C from Tiled GPU (10x10): \n");
+    for (int i = 0; i < 10; i++)    {
+        for (int j = 0; j < 10; j++)            
+            printf("%.2f ", C_tiled_gpu[i*N3+j]);
+        printf("\n");
+    }   
+
+    printf("\nAsserting Passed! \n");
     // Free memory
     free(A);
     free(B);
